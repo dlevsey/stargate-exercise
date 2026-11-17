@@ -56,6 +56,8 @@ namespace StargateAPI.Business.Commands
         }
         public async Task<CreateAstronautDutyResult> Handle(CreateAstronautDuty request, CancellationToken cancellationToken)
         {
+            var isRetired = string.Equals(request.DutyTitle, AstronautDuty.RetiredDutyTitle, StringComparison.OrdinalIgnoreCase);
+            var dutyTitle = isRetired ? AstronautDuty.RetiredDutyTitle : request.DutyTitle;
 
             var query = $"SELECT * FROM [Person] WHERE \'{request.Name}\' = Name";
 
@@ -69,10 +71,10 @@ namespace StargateAPI.Business.Commands
             {
                 astronautDetail = new AstronautDetail();
                 astronautDetail.PersonId = person.Id;
-                astronautDetail.CurrentDutyTitle = request.DutyTitle;
+                astronautDetail.CurrentDutyTitle = dutyTitle;
                 astronautDetail.CurrentRank = request.Rank;
                 astronautDetail.CareerStartDate = request.DutyStartDate.Date;
-                if (request.DutyTitle == "RETIRED")
+                if (isRetired)
                 {
                     astronautDetail.CareerEndDate = request.DutyStartDate.Date;
                 }
@@ -82,12 +84,9 @@ namespace StargateAPI.Business.Commands
             }
             else
             {
-                astronautDetail.CurrentDutyTitle = request.DutyTitle;
+                astronautDetail.CurrentDutyTitle = dutyTitle;
                 astronautDetail.CurrentRank = request.Rank;
-                if (request.DutyTitle == "RETIRED")
-                {
-                    astronautDetail.CareerEndDate = request.DutyStartDate.AddDays(-1).Date;
-                }
+                astronautDetail.CareerEndDate = isRetired ? request.DutyStartDate.AddDays(-1).Date : null;
                 _context.AstronautDetails.Update(astronautDetail);
             }
 
@@ -105,7 +104,7 @@ namespace StargateAPI.Business.Commands
             {
                 PersonId = person.Id,
                 Rank = request.Rank,
-                DutyTitle = request.DutyTitle,
+                DutyTitle = dutyTitle,
                 DutyStartDate = request.DutyStartDate.Date,
                 DutyEndDate = null
             };

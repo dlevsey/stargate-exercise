@@ -146,6 +146,38 @@ public class CreateAstronautDutyTests : IDisposable
         Assert.Equal(new[] { new DateTime(2024, 1, 14), new DateTime(2024, 5, 31) }, closed.Select(d => d.DutyEndDate!.Value));
     }
 
+    // Rule 6: a person is 'Retired' when the duty title is 'RETIRED', however the word is typed.
+    [Fact]
+    public async Task Retired_in_lower_case_counts_as_retired()
+    {
+        await _db.AddPerson("Jane Roe");
+        await _db.AddDuty("Jane Roe", "1LT", "Pilot", new DateTime(2024, 1, 15));
+
+        await _db.AddDuty("Jane Roe", "1LT", "retired", new DateTime(2025, 1, 1));
+
+        using var context = _db.NewContext();
+        var detail = await context.AstronautDetails.SingleAsync();
+        Assert.Equal("RETIRED", detail.CurrentDutyTitle);
+        Assert.Equal(new DateTime(2024, 12, 31), detail.CareerEndDate);
+        Assert.Equal("RETIRED", (await context.AstronautDuties.SingleAsync(d => d.DutyEndDate == null)).DutyTitle);
+    }
+
+    // A retired person who takes a new duty is active again, so the career end date is cleared.
+    [Fact]
+    public async Task A_duty_after_retirement_clears_the_career_end_date()
+    {
+        await _db.AddPerson("Jane Roe");
+        await _db.AddDuty("Jane Roe", "1LT", "Pilot", new DateTime(2024, 1, 15));
+        await _db.AddDuty("Jane Roe", "1LT", "RETIRED", new DateTime(2025, 1, 1));
+
+        await _db.AddDuty("Jane Roe", "CPT", "Commander", new DateTime(2026, 1, 1));
+
+        using var context = _db.NewContext();
+        var detail = await context.AstronautDetails.SingleAsync();
+        Assert.Equal("Commander", detail.CurrentDutyTitle);
+        Assert.Null(detail.CareerEndDate);
+    }
+
     // Rule 5 on data the old code left behind: a back-dated duty that was accepted, so the open duty is not the newest one.
     [Fact]
     public async Task The_duty_that_gets_closed_is_the_open_one()

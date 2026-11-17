@@ -7,6 +7,8 @@ namespace StargateAPI.Business.Data
     [Table("AstronautDuty")]
     public class AstronautDuty
     {
+        public const string RetiredDutyTitle = "RETIRED";
+
         public int Id { get; set; }
 
         public int PersonId { get; set; }
