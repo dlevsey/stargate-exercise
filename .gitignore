@@ -1,0 +1,11 @@
+# Build output and editor files
+bin/
+obj/
+.vs/
+*.user
+TestResults/
+
+# The local SQLite database (created by: dotnet ef database update)
+*.db
+*.db-shm
+*.db-wal
