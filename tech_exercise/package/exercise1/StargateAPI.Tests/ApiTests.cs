@@ -133,6 +133,8 @@ public class ApiTests : IDisposable
         Assert.Equal("Commander", body!.Person!.CurrentDutyTitle);
         Assert.Equal(new[] { "Commander", "Pilot" }, body.AstronautDuties.Select(d => d.DutyTitle));
         Assert.Equal(new DateTime(2024, 5, 31), body.AstronautDuties[1].DutyEndDate);
+        // A duty in the response is a duty, without the database's own fields.
+        Assert.DoesNotContain("\"person\":null", await response.Content.ReadAsStringAsync());
     }
 
     private static CreateAstronautDuty Duty(string name, string dutyTitle, DateTime start) =>
