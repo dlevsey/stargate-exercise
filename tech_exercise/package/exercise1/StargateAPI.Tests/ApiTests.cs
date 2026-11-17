@@ -118,6 +118,23 @@ public class ApiTests : IDisposable
         Assert.Equal("DutyStartDate is required.", (await noStartDate.Content.ReadFromJsonAsync<BaseResponse>())!.Message);
     }
 
+    // GET /AstronautDuty/{name} returns the person and that person's duties, newest first.
+    [Fact]
+    public async Task The_duties_endpoint_returns_the_person_and_the_duties()
+    {
+        await _client.PostAsJsonAsync("/Person", "Jane Roe");
+        await _client.PostAsJsonAsync("/AstronautDuty", Duty("Jane Roe", "Pilot", new DateTime(2024, 1, 15)));
+        await _client.PostAsJsonAsync("/AstronautDuty", Duty("Jane Roe", "Commander", new DateTime(2024, 6, 1)));
+
+        var response = await _client.GetAsync("/AstronautDuty/Jane%20Roe");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<GetAstronautDutiesByNameResult>();
+        Assert.Equal("Commander", body!.Person!.CurrentDutyTitle);
+        Assert.Equal(new[] { "Commander", "Pilot" }, body.AstronautDuties.Select(d => d.DutyTitle));
+        Assert.Equal(new DateTime(2024, 5, 31), body.AstronautDuties[1].DutyEndDate);
+    }
+
     private static CreateAstronautDuty Duty(string name, string dutyTitle, DateTime start) =>
         new() { Name = name, Rank = "1LT", DutyTitle = dutyTitle, DutyStartDate = start };
 }
