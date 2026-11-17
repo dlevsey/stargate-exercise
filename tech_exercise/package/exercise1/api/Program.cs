@@ -1,6 +1,8 @@
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using StargateAPI.Business.Commands;
 using StargateAPI.Business.Data;
+using StargateAPI.Business.Logging;
 using StargateAPI.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +17,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<StargateContext>(options => 
     options.UseSqlite(builder.Configuration.GetConnectionString("StarbaseApiDatabase")));
+
+// Registered before AddMediatR on purpose. MediatR runs behaviours in the order they were registered,
+// and AddMediatR registers the behaviour that runs the pre-processors. Being first puts the logging
+// around the pre-processors, so the requests they refuse are logged too.
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ProcessLoggingBehavior<,>));
 
 builder.Services.AddMediatR(cfg =>
 {
