@@ -29,6 +29,8 @@ namespace StargateAPI.Business.Queries
 
             result.Person = person.FirstOrDefault();
 
+            if (result.Person is null) throw new BadHttpRequestException("Person not found.", StatusCodes.Status404NotFound);
+
             return result;
         }
     }

@@ -29,6 +29,8 @@ namespace StargateAPI.Business.Queries
 
             var person = await _context.Connection.QueryFirstOrDefaultAsync<PersonAstronaut>(query, new { request.Name });
 
+            if (person is null) throw new BadHttpRequestException("Person not found.", StatusCodes.Status404NotFound);
+
             result.Person = person;
 
             query = "SELECT * FROM [AstronautDuty] WHERE @PersonId = PersonId Order By DutyStartDate Desc";

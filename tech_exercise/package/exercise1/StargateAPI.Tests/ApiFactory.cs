@@ -12,6 +12,10 @@ namespace StargateAPI.Tests;
 public class ApiFactory : WebApplicationFactory<Program>
 {
     private readonly SqliteConnection _connection = new("Data Source=:memory:");
+    private readonly bool _createDatabase;
+
+    // createDatabase: false leaves the database without tables, so that every query fails.
+    public ApiFactory(bool createDatabase = true) => _createDatabase = createDatabase;
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -29,8 +33,11 @@ public class ApiFactory : WebApplicationFactory<Program>
     {
         var host = base.CreateHost(builder);
 
-        using var scope = host.Services.CreateScope();
-        scope.ServiceProvider.GetRequiredService<StargateContext>().Database.EnsureCreated();
+        if (_createDatabase)
+        {
+            using var scope = host.Services.CreateScope();
+            scope.ServiceProvider.GetRequiredService<StargateContext>().Database.EnsureCreated();
+        }
 
         return host;
     }

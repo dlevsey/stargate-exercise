@@ -2,6 +2,7 @@
 using System.Net.Http.Json;
 using StargateAPI.Business.Commands;
 using StargateAPI.Business.Queries;
+using StargateAPI.Controllers;
 
 namespace StargateAPI.Tests;
 
@@ -47,8 +48,63 @@ public class ApiTests : IDisposable
 
         var second = await _client.PostAsJsonAsync("/Person", "Jane Roe");
 
-        Assert.False(second.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, second.StatusCode);
+        var body = await second.Content.ReadFromJsonAsync<BaseResponse>();
+        Assert.False(body!.Success);
+        Assert.Equal(409, body.ResponseCode);
         var people = await _client.GetFromJsonAsync<GetPeopleResult>("/Person");
         Assert.Single(people!.People);
     }
+
+    [Fact]
+    public async Task An_unknown_person_returns_404()
+    {
+        var response = await _client.GetAsync("/Person/Nobody");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<BaseResponse>();
+        Assert.False(body!.Success);
+        Assert.Equal("Person not found.", body.Message);
+    }
+
+    // POST /AstronautDuty had no try/catch at all: this used to be an unhandled exception.
+    [Fact]
+    public async Task A_duty_for_an_unknown_person_returns_404()
+    {
+        var response = await _client.PostAsJsonAsync("/AstronautDuty", Duty("Nobody", "Pilot", new DateTime(2024, 1, 15)));
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.False((await response.Content.ReadFromJsonAsync<BaseResponse>())!.Success);
+    }
+
+    [Fact]
+    public async Task A_repeated_duty_returns_409_and_a_back_dated_duty_returns_400()
+    {
+        await _client.PostAsJsonAsync("/Person", "Jane Roe");
+        var first = await _client.PostAsJsonAsync("/AstronautDuty", Duty("Jane Roe", "Pilot", new DateTime(2024, 1, 15)));
+        Assert.Equal(HttpStatusCode.OK, first.StatusCode);
+
+        var repeated = await _client.PostAsJsonAsync("/AstronautDuty", Duty("Jane Roe", "Pilot", new DateTime(2024, 1, 15)));
+        var backDated = await _client.PostAsJsonAsync("/AstronautDuty", Duty("Jane Roe", "Trainee", new DateTime(2023, 6, 1)));
+
+        Assert.Equal(HttpStatusCode.Conflict, repeated.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, backDated.StatusCode);
+    }
+
+    // Anything unexpected becomes a 500 with a fixed message: no SQL, no table names, no stack trace.
+    [Fact]
+    public async Task An_unexpected_error_returns_500_without_internal_details()
+    {
+        using var broken = new ApiFactory(createDatabase: false);
+
+        var response = await broken.CreateClient().GetAsync("/Person");
+
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        var text = await response.Content.ReadAsStringAsync();
+        Assert.Contains("An unexpected error occurred.", text);
+        Assert.DoesNotContain("SQLite", text);
+    }
+
+    private static CreateAstronautDuty Duty(string name, string dutyTitle, DateTime start) =>
+        new() { Name = name, Rank = "1LT", DutyTitle = dutyTitle, DutyStartDate = start };
 }

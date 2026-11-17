@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StargateAPI.Business.Queries;
 using StargateAPI.Controllers;
@@ -80,6 +81,21 @@ public class QueryTests : IDisposable
 
         Assert.Equal(odd.Id, result.Person?.PersonId);
         Assert.Equal(odd.Id, (await context.AstronautDuties.SingleAsync()).PersonId);
+    }
+
+    // An unknown name used to give 200 with "person": null from one query and a NullReferenceException from the other.
+    [Fact]
+    public async Task Asking_for_an_unknown_person_is_refused_with_404()
+    {
+        using var context = _db.NewContext();
+
+        var person = await Assert.ThrowsAsync<BadHttpRequestException>(
+            () => new GetPersonByNameHandler(context).Handle(new GetPersonByName { Name = "Nobody" }, CancellationToken.None));
+        var duties = await Assert.ThrowsAsync<BadHttpRequestException>(
+            () => new GetAstronautDutiesByNameHandler(context).Handle(new GetAstronautDutiesByName { Name = "Nobody" }, CancellationToken.None));
+
+        Assert.Equal(404, person.StatusCode);
+        Assert.Equal(404, duties.StatusCode);
     }
 
     [Fact]

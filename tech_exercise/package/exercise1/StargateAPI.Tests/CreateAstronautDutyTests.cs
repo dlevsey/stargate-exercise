@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using StargateAPI.Business.Commands;
 using StargateAPI.Business.Data;
 
 namespace StargateAPI.Tests;
@@ -76,8 +77,22 @@ public class CreateAstronautDutyTests : IDisposable
     [Fact]
     public async Task A_duty_for_an_unknown_person_is_refused()
     {
-        await Assert.ThrowsAsync<BadHttpRequestException>(
+        var refused = await Assert.ThrowsAsync<BadHttpRequestException>(
             () => _db.AddDuty("Nobody", "1LT", "Pilot", new DateTime(2024, 1, 15)));
+        Assert.Equal(404, refused.StatusCode);
+    }
+
+    // Called without its pre-processor, the handler used to fail with a NullReferenceException.
+    [Fact]
+    public async Task The_handler_itself_refuses_an_unknown_person()
+    {
+        using var context = _db.NewContext();
+        var request = new CreateAstronautDuty { Name = "Nobody", Rank = "1LT", DutyTitle = "Pilot", DutyStartDate = new DateTime(2024, 1, 15) };
+
+        var refused = await Assert.ThrowsAsync<BadHttpRequestException>(
+            () => new CreateAstronautDutyHandler(context).Handle(request, CancellationToken.None));
+
+        Assert.Equal(404, refused.StatusCode);
     }
 
     // Rule 3: a person has one current duty, so a new duty cannot start on or before the current one.
@@ -87,8 +102,9 @@ public class CreateAstronautDutyTests : IDisposable
         await _db.AddPerson("Jane Roe");
         await _db.AddDuty("Jane Roe", "1LT", "Pilot", new DateTime(2024, 1, 15));
 
-        await Assert.ThrowsAsync<BadHttpRequestException>(
+        var refused = await Assert.ThrowsAsync<BadHttpRequestException>(
             () => _db.AddDuty("Jane Roe", "2LT", "Trainee", new DateTime(2023, 6, 1)));
+        Assert.Equal(400, refused.StatusCode);
 
         using var context = _db.NewContext();
         var duty = await context.AstronautDuties.SingleAsync();
@@ -112,8 +128,9 @@ public class CreateAstronautDutyTests : IDisposable
         await _db.AddPerson("Jane Roe");
         await _db.AddDuty("Jane Roe", "1LT", "Pilot", new DateTime(2024, 1, 15));
 
-        await Assert.ThrowsAsync<BadHttpRequestException>(
+        var refused = await Assert.ThrowsAsync<BadHttpRequestException>(
             () => _db.AddDuty("Jane Roe", "1LT", "Pilot", new DateTime(2024, 1, 15)));
+        Assert.Equal(409, refused.StatusCode);
     }
 
     // The duplicate check belongs to one person: two people can start the same duty on the same day.

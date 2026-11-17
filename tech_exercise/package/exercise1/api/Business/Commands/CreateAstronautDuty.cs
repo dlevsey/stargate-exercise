@@ -32,11 +32,11 @@ namespace StargateAPI.Business.Commands
         {
             var person = _context.People.AsNoTracking().FirstOrDefault(z => z.Name == request.Name);
 
-            if (person is null) throw new BadHttpRequestException("Bad Request");
+            if (person is null) throw new BadHttpRequestException("Person not found.", StatusCodes.Status404NotFound);
 
             var verifyNoPreviousDuty = _context.AstronautDuties.FirstOrDefault(z => z.PersonId == person.Id && z.DutyTitle == request.DutyTitle && z.DutyStartDate == request.DutyStartDate.Date);
 
-            if (verifyNoPreviousDuty is not null) throw new BadHttpRequestException("Bad Request");
+            if (verifyNoPreviousDuty is not null) throw new BadHttpRequestException("This person already has this duty on this start date.", StatusCodes.Status409Conflict);
 
             var currentDuty = _context.AstronautDuties.AsNoTracking().FirstOrDefault(z => z.PersonId == person.Id && z.DutyEndDate == null);
 
@@ -62,6 +62,8 @@ namespace StargateAPI.Business.Commands
             var query = "SELECT * FROM [Person] WHERE @Name = Name";
 
             var person = await _context.Connection.QueryFirstOrDefaultAsync<Person>(query, new { request.Name });
+
+            if (person is null) throw new BadHttpRequestException("Person not found.", StatusCodes.Status404NotFound);
 
             query = "SELECT * FROM [AstronautDetail] WHERE @PersonId = PersonId";
 

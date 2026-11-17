@@ -41,7 +41,8 @@ public class CreatePersonTests : IDisposable
     {
         await _db.AddPerson("Jane Roe");
 
-        await Assert.ThrowsAsync<BadHttpRequestException>(() => _db.AddPerson("Jane Roe"));
+        var refused = await Assert.ThrowsAsync<BadHttpRequestException>(() => _db.AddPerson("Jane Roe"));
+        Assert.Equal(409, refused.StatusCode);
     }
 
     [Fact]
