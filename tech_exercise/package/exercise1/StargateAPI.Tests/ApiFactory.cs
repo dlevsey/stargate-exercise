@@ -36,7 +36,7 @@ public class ApiFactory : WebApplicationFactory<Program>
         if (_createDatabase)
         {
             using var scope = host.Services.CreateScope();
-            scope.ServiceProvider.GetRequiredService<StargateContext>().Database.EnsureCreated();
+            scope.ServiceProvider.GetRequiredService<StargateContext>().Database.Migrate();
         }
 
         return host;

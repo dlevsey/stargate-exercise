@@ -20,7 +20,7 @@ public sealed class TestDatabase : IDisposable
         _options = new DbContextOptionsBuilder<StargateContext>().UseSqlite(_connection).Options;
 
         using var context = NewContext();
-        context.Database.EnsureCreated();
+        context.Database.Migrate();
     }
 
     // A new context per call, the way each HTTP request gets its own.
