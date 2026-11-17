@@ -178,6 +178,20 @@ public class CreateAstronautDutyTests : IDisposable
         Assert.Null(detail.CareerEndDate);
     }
 
+    // Rule 7 when RETIRED is the very first duty. The career then ends the day before it starts.
+    [Fact]
+    public async Task Retiring_as_the_first_duty_ends_the_career_the_day_before()
+    {
+        await _db.AddPerson("Jane Roe");
+
+        await _db.AddDuty("Jane Roe", "1LT", "RETIRED", new DateTime(2025, 1, 1));
+
+        using var context = _db.NewContext();
+        var detail = await context.AstronautDetails.SingleAsync();
+        Assert.Equal(new DateTime(2025, 1, 1), detail.CareerStartDate);
+        Assert.Equal(new DateTime(2024, 12, 31), detail.CareerEndDate);
+    }
+
     // Rule 5 on data the old code left behind: a back-dated duty that was accepted, so the open duty is not the newest one.
     [Fact]
     public async Task The_duty_that_gets_closed_is_the_open_one()
