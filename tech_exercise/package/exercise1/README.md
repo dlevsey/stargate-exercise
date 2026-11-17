@@ -61,3 +61,34 @@ Examine the code, find and resolve any flaws, if any exist. Identify design patt
 1. A Person's Previous Duty End Date is set to the day before the New Astronaut Duty Start Date when a new Astronaut Duty is received for a Person.
 1. A Person is classified as 'Retired' when a Duty Title is 'RETIRED'.
 1. A Person's Career End Date is one day before the Retired Duty Start Date.
+
+## Running this solution
+
+Run every command from the `exercise1` folder. You need the .NET SDK 8 or newer, and the EF Core command-line tool in version 8 (`dotnet tool install --global dotnet-ef --version 8.*`).
+
+1. Create the database. This makes the SQLite file `api\starbase.db` with all tables:
+
+   ```
+   cd api
+   dotnet ef database update
+   ```
+
+2. Run the API (still in `api`), then open http://localhost:5204/swagger in a browser:
+
+   ```
+   dotnet run --launch-profile http
+   ```
+
+3. Run the tests (from `exercise1`):
+
+   ```
+   dotnet test
+   ```
+
+   The same with code coverage. The settings file leaves the generated migration files out of the count:
+
+   ```
+   dotnet test --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+   ```
+
+What was changed, and why, is in [CHANGES.md](CHANGES.md).

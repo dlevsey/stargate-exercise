@@ -7,6 +7,8 @@ namespace StargateAPI.Business.Data
     [Table("AstronautDuty")]
     public class AstronautDuty
     {
+        public const string RetiredDutyTitle = "RETIRED";
+
         public int Id { get; set; }
 
         public int PersonId { get; set; }
@@ -19,7 +21,7 @@ namespace StargateAPI.Business.Data
 
         public DateTime? DutyEndDate { get; set; }
 
-        public virtual Person Person { get; set; }
+        public virtual Person Person { get; set; } = null!;
     }
 
     public class AstronautDutyConfiguration : IEntityTypeConfiguration<AstronautDuty>
