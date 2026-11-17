@@ -163,6 +163,31 @@ public class CreateAstronautDutyTests : IDisposable
         Assert.Equal(new[] { new DateTime(2024, 1, 14), new DateTime(2024, 5, 31) }, closed.Select(d => d.DutyEndDate!.Value));
     }
 
+    [Theory]
+    [InlineData("", "Pilot")]
+    [InlineData("1LT", " ")]
+    public async Task A_blank_rank_or_title_is_refused(string rank, string dutyTitle)
+    {
+        await _db.AddPerson("Jane Roe");
+
+        var refused = await Assert.ThrowsAsync<BadHttpRequestException>(
+            () => _db.AddDuty("Jane Roe", rank, dutyTitle, new DateTime(2024, 1, 15)));
+
+        Assert.Equal(400, refused.StatusCode);
+    }
+
+    // A request without dutyStartDate arrives as 0001-01-01, and that date used to be stored.
+    [Fact]
+    public async Task A_missing_start_date_is_refused()
+    {
+        await _db.AddPerson("Jane Roe");
+
+        var refused = await Assert.ThrowsAsync<BadHttpRequestException>(
+            () => _db.AddDuty("Jane Roe", "1LT", "Pilot", default));
+
+        Assert.Equal(400, refused.StatusCode);
+    }
+
     // Rule 6: a person is 'Retired' when the duty title is 'RETIRED', however the word is typed.
     [Fact]
     public async Task Retired_in_lower_case_counts_as_retired()

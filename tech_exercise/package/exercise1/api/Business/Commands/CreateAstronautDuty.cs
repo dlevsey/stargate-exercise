@@ -30,6 +30,11 @@ namespace StargateAPI.Business.Commands
 
         public Task Process(CreateAstronautDuty request, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(request.Name)) throw new BadHttpRequestException("Name is required.");
+            if (string.IsNullOrWhiteSpace(request.Rank)) throw new BadHttpRequestException("Rank is required.");
+            if (string.IsNullOrWhiteSpace(request.DutyTitle)) throw new BadHttpRequestException("DutyTitle is required.");
+            if (request.DutyStartDate == default) throw new BadHttpRequestException("DutyStartDate is required.");
+
             var person = _context.People.AsNoTracking().FirstOrDefault(z => z.Name == request.Name);
 
             if (person is null) throw new BadHttpRequestException("Person not found.", StatusCodes.Status404NotFound);

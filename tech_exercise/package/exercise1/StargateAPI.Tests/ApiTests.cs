@@ -105,6 +105,19 @@ public class ApiTests : IDisposable
         Assert.DoesNotContain("SQLite", text);
     }
 
+    [Fact]
+    public async Task Blank_and_missing_values_return_400()
+    {
+        var blankName = await _client.PostAsJsonAsync("/Person", "   ");
+        await _client.PostAsJsonAsync("/Person", "Jane Roe");
+        var noStartDate = await _client.PostAsJsonAsync("/AstronautDuty", new { name = "Jane Roe", rank = "1LT", dutyTitle = "Pilot" });
+
+        Assert.Equal(HttpStatusCode.BadRequest, blankName.StatusCode);
+        Assert.Equal("Name is required.", (await blankName.Content.ReadFromJsonAsync<BaseResponse>())!.Message);
+        Assert.Equal(HttpStatusCode.BadRequest, noStartDate.StatusCode);
+        Assert.Equal("DutyStartDate is required.", (await noStartDate.Content.ReadFromJsonAsync<BaseResponse>())!.Message);
+    }
+
     private static CreateAstronautDuty Duty(string name, string dutyTitle, DateTime start) =>
         new() { Name = name, Rank = "1LT", DutyTitle = dutyTitle, DutyStartDate = start };
 }

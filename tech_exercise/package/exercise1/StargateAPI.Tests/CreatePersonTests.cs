@@ -45,6 +45,16 @@ public class CreatePersonTests : IDisposable
         Assert.Equal(409, refused.StatusCode);
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task A_blank_name_is_refused(string name)
+    {
+        var refused = await Assert.ThrowsAsync<BadHttpRequestException>(() => _db.AddPerson(name));
+
+        Assert.Equal(400, refused.StatusCode);
+    }
+
     [Fact]
     public async Task Names_that_differ_only_by_case_are_the_same_person()
     {
