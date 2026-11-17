@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using StargateAPI.Business.Queries;
 using StargateAPI.Controllers;
 
@@ -49,6 +50,36 @@ public class QueryTests : IDisposable
 
         Assert.Equal("Jane Roe", result.Person.Name);
         Assert.Equal(new[] { "Commander", "Pilot" }, result.AstronautDuties.Select(d => d.DutyTitle));
+    }
+
+    // A name with an apostrophe is ordinary data. In SQL built from strings it ended the text early and broke the query.
+    [Fact]
+    public async Task A_name_with_an_apostrophe_can_be_read_back()
+    {
+        await _db.AddPerson("Miles O'Brien");
+        await _db.AddDuty("Miles O'Brien", "CPO", "Engineer", new DateTime(2024, 1, 15));
+
+        using var context = _db.NewContext();
+        var person = await new GetPersonByNameHandler(context).Handle(new GetPersonByName { Name = "Miles O'Brien" }, CancellationToken.None);
+        var duties = await new GetAstronautDutiesByNameHandler(context).Handle(new GetAstronautDutiesByName { Name = "Miles O'Brien" }, CancellationToken.None);
+
+        Assert.Equal("Miles O'Brien", person.Person?.Name);
+        Assert.Equal("Engineer", Assert.Single(duties.AstronautDuties).DutyTitle);
+    }
+
+    // SQL injection: in SQL built from strings this name matched every row, so the first person in the table was used.
+    [Fact]
+    public async Task Sql_in_a_name_is_treated_as_text()
+    {
+        await _db.AddPerson("Jane Roe");
+        var odd = await _db.AddPerson("' OR 1=1 --");
+        await _db.AddDuty("' OR 1=1 --", "1LT", "Pilot", new DateTime(2024, 1, 15));
+
+        using var context = _db.NewContext();
+        var result = await new GetPersonByNameHandler(context).Handle(new GetPersonByName { Name = "' OR 1=1 --" }, CancellationToken.None);
+
+        Assert.Equal(odd.Id, result.Person?.PersonId);
+        Assert.Equal(odd.Id, (await context.AstronautDuties.SingleAsync()).PersonId);
     }
 
     [Fact]
