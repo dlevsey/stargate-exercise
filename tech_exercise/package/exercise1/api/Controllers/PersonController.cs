@@ -49,5 +49,17 @@ namespace StargateAPI.Controllers
             return this.GetResponse(result);
 
         }
+
+        [HttpPut("{name}")]
+        public async Task<IActionResult> UpdatePerson(string name, [FromBody] string newName)
+        {
+            var result = await _mediator.Send(new UpdatePerson()
+            {
+                Name = name,
+                NewName = newName
+            });
+
+            return this.GetResponse(result);
+        }
     }
 }

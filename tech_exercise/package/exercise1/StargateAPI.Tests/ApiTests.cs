@@ -137,6 +137,35 @@ public class ApiTests : IDisposable
         Assert.DoesNotContain("\"person\":null", await response.Content.ReadAsStringAsync());
     }
 
+    [Fact]
+    public async Task A_person_can_be_renamed_and_keeps_their_duties()
+    {
+        await _client.PostAsJsonAsync("/Person", "Jane Roe");
+        await _client.PostAsJsonAsync("/AstronautDuty", Duty("Jane Roe", "Pilot", new DateTime(2024, 1, 15)));
+
+        var renamed = await _client.PutAsJsonAsync("/Person/Jane%20Roe", "Jane Doe");
+
+        Assert.Equal(HttpStatusCode.OK, renamed.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await _client.GetAsync("/Person/Jane%20Roe")).StatusCode);
+        var duties = await _client.GetFromJsonAsync<GetAstronautDutiesByNameResult>("/AstronautDuty/Jane%20Doe");
+        Assert.Equal("Pilot", Assert.Single(duties!.AstronautDuties).DutyTitle);
+    }
+
+    [Fact]
+    public async Task Renaming_returns_404_409_or_400_when_it_cannot_be_done()
+    {
+        await _client.PostAsJsonAsync("/Person", "Jane Roe");
+        await _client.PostAsJsonAsync("/Person", "Sam Poe");
+
+        var unknown = await _client.PutAsJsonAsync("/Person/Nobody", "Somebody");
+        var taken = await _client.PutAsJsonAsync("/Person/Jane%20Roe", "Sam Poe");
+        var blank = await _client.PutAsJsonAsync("/Person/Jane%20Roe", "  ");
+
+        Assert.Equal(HttpStatusCode.NotFound, unknown.StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, taken.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, blank.StatusCode);
+    }
+
     private static CreateAstronautDuty Duty(string name, string dutyTitle, DateTime start) =>
         new() { Name = name, Rank = "1LT", DutyTitle = dutyTitle, DutyStartDate = start };
 }
