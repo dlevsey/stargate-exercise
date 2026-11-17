@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using StargateAPI.Business.Data;
 
 namespace StargateAPI.Tests;
 
@@ -77,5 +78,93 @@ public class CreateAstronautDutyTests : IDisposable
     {
         await Assert.ThrowsAsync<BadHttpRequestException>(
             () => _db.AddDuty("Nobody", "1LT", "Pilot", new DateTime(2024, 1, 15)));
+    }
+
+    // Rule 3: a person has one current duty, so a new duty cannot start on or before the current one.
+    [Fact]
+    public async Task A_back_dated_duty_is_refused()
+    {
+        await _db.AddPerson("Jane Roe");
+        await _db.AddDuty("Jane Roe", "1LT", "Pilot", new DateTime(2024, 1, 15));
+
+        await Assert.ThrowsAsync<BadHttpRequestException>(
+            () => _db.AddDuty("Jane Roe", "2LT", "Trainee", new DateTime(2023, 6, 1)));
+
+        using var context = _db.NewContext();
+        var duty = await context.AstronautDuties.SingleAsync();
+        Assert.Equal("Pilot", duty.DutyTitle);
+        Assert.Null(duty.DutyEndDate);
+    }
+
+    [Fact]
+    public async Task A_duty_starting_on_the_same_day_as_the_current_one_is_refused()
+    {
+        await _db.AddPerson("Jane Roe");
+        await _db.AddDuty("Jane Roe", "1LT", "Pilot", new DateTime(2024, 1, 15));
+
+        await Assert.ThrowsAsync<BadHttpRequestException>(
+            () => _db.AddDuty("Jane Roe", "CPT", "Commander", new DateTime(2024, 1, 15, 9, 30, 0)));
+    }
+
+    [Fact]
+    public async Task The_same_duty_twice_is_refused()
+    {
+        await _db.AddPerson("Jane Roe");
+        await _db.AddDuty("Jane Roe", "1LT", "Pilot", new DateTime(2024, 1, 15));
+
+        await Assert.ThrowsAsync<BadHttpRequestException>(
+            () => _db.AddDuty("Jane Roe", "1LT", "Pilot", new DateTime(2024, 1, 15)));
+    }
+
+    // The duplicate check belongs to one person: two people can start the same duty on the same day.
+    [Fact]
+    public async Task Two_people_can_start_the_same_duty_on_the_same_day()
+    {
+        await _db.AddPerson("Jane Roe");
+        await _db.AddPerson("Sam Poe");
+        await _db.AddDuty("Jane Roe", "1LT", "Pilot", new DateTime(2024, 1, 15));
+
+        await _db.AddDuty("Sam Poe", "1LT", "Pilot", new DateTime(2024, 1, 15));
+
+        using var context = _db.NewContext();
+        Assert.Equal(2, await context.AstronautDuties.CountAsync());
+    }
+
+    // Rules 3 and 4 together: after any number of duties a person has exactly one duty without an end date.
+    [Fact]
+    public async Task Each_person_has_exactly_one_open_duty()
+    {
+        await _db.AddPerson("Jane Roe");
+        await _db.AddDuty("Jane Roe", "2LT", "Trainee", new DateTime(2023, 1, 1));
+        await _db.AddDuty("Jane Roe", "1LT", "Pilot", new DateTime(2024, 1, 15));
+        await _db.AddDuty("Jane Roe", "CPT", "Commander", new DateTime(2024, 6, 1));
+
+        using var context = _db.NewContext();
+        var open = await context.AstronautDuties.Where(d => d.DutyEndDate == null).ToListAsync();
+        Assert.Equal("Commander", Assert.Single(open).DutyTitle);
+        var closed = await context.AstronautDuties.Where(d => d.DutyEndDate != null).OrderBy(d => d.DutyStartDate).ToListAsync();
+        Assert.Equal(new[] { new DateTime(2024, 1, 14), new DateTime(2024, 5, 31) }, closed.Select(d => d.DutyEndDate!.Value));
+    }
+
+    // Rule 5 on data the old code left behind: a back-dated duty that was accepted, so the open duty is not the newest one.
+    [Fact]
+    public async Task The_duty_that_gets_closed_is_the_open_one()
+    {
+        var person = await _db.AddPerson("Jane Roe");
+        using (var seed = _db.NewContext())
+        {
+            seed.AstronautDetails.Add(new AstronautDetail { PersonId = person.Id, CurrentRank = "2LT", CurrentDutyTitle = "Trainee", CareerStartDate = new DateTime(2024, 1, 15) });
+            seed.AstronautDuties.Add(new AstronautDuty { PersonId = person.Id, Rank = "1LT", DutyTitle = "Pilot", DutyStartDate = new DateTime(2024, 1, 15), DutyEndDate = new DateTime(2023, 5, 31) });
+            seed.AstronautDuties.Add(new AstronautDuty { PersonId = person.Id, Rank = "2LT", DutyTitle = "Trainee", DutyStartDate = new DateTime(2023, 6, 1), DutyEndDate = null });
+            await seed.SaveChangesAsync();
+        }
+
+        await _db.AddDuty("Jane Roe", "CPT", "Commander", new DateTime(2025, 1, 1));
+
+        using var context = _db.NewContext();
+        var open = await context.AstronautDuties.Where(d => d.DutyEndDate == null).ToListAsync();
+        Assert.Equal("Commander", Assert.Single(open).DutyTitle);
+        var trainee = await context.AstronautDuties.SingleAsync(d => d.DutyTitle == "Trainee");
+        Assert.Equal(new DateTime(2024, 12, 31), trainee.DutyEndDate);
     }
 }
