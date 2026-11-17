@@ -36,4 +36,5 @@ app.MapControllers();
 
 app.Run();
 
-
+// Lets the test project start this app with WebApplicationFactory<Program>.
+public partial class Program { }
