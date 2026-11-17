@@ -28,26 +28,24 @@ namespace StargateAPI.Business.Commands
             _context = context;
         }
 
-        public Task Process(CreateAstronautDuty request, CancellationToken cancellationToken)
+        public async Task Process(CreateAstronautDuty request, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(request.Name)) throw new BadHttpRequestException("Name is required.");
             if (string.IsNullOrWhiteSpace(request.Rank)) throw new BadHttpRequestException("Rank is required.");
             if (string.IsNullOrWhiteSpace(request.DutyTitle)) throw new BadHttpRequestException("DutyTitle is required.");
             if (request.DutyStartDate == default) throw new BadHttpRequestException("DutyStartDate is required.");
 
-            var person = _context.People.AsNoTracking().FirstOrDefault(z => z.Name == request.Name);
+            var person = await _context.People.AsNoTracking().FirstOrDefaultAsync(z => z.Name == request.Name, cancellationToken);
 
             if (person is null) throw new BadHttpRequestException("Person not found.", StatusCodes.Status404NotFound);
 
-            var verifyNoPreviousDuty = _context.AstronautDuties.FirstOrDefault(z => z.PersonId == person.Id && z.DutyTitle == request.DutyTitle && z.DutyStartDate == request.DutyStartDate.Date);
+            var verifyNoPreviousDuty = await _context.AstronautDuties.FirstOrDefaultAsync(z => z.PersonId == person.Id && z.DutyTitle == request.DutyTitle && z.DutyStartDate == request.DutyStartDate.Date, cancellationToken);
 
             if (verifyNoPreviousDuty is not null) throw new BadHttpRequestException("This person already has this duty on this start date.", StatusCodes.Status409Conflict);
 
-            var currentDuty = _context.AstronautDuties.AsNoTracking().FirstOrDefault(z => z.PersonId == person.Id && z.DutyEndDate == null);
+            var currentDuty = await _context.AstronautDuties.AsNoTracking().FirstOrDefaultAsync(z => z.PersonId == person.Id && z.DutyEndDate == null, cancellationToken);
 
             if (currentDuty is not null && request.DutyStartDate.Date <= currentDuty.DutyStartDate) throw new BadHttpRequestException("A new duty must start after the current duty's start date.");
-
-            return Task.CompletedTask;
         }
     }
 
@@ -86,7 +84,7 @@ namespace StargateAPI.Business.Commands
                     astronautDetail.CareerEndDate = request.DutyStartDate.AddDays(-1).Date;
                 }
 
-                await _context.AstronautDetails.AddAsync(astronautDetail);
+                await _context.AstronautDetails.AddAsync(astronautDetail, cancellationToken);
 
             }
             else
@@ -116,9 +114,9 @@ namespace StargateAPI.Business.Commands
                 DutyEndDate = null
             };
 
-            await _context.AstronautDuties.AddAsync(newAstronautDuty);
+            await _context.AstronautDuties.AddAsync(newAstronautDuty, cancellationToken);
 
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
 
             return new CreateAstronautDutyResult()
             {

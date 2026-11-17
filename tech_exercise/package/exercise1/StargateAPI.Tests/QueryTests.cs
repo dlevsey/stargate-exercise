@@ -49,7 +49,7 @@ public class QueryTests : IDisposable
         using var context = _db.NewContext();
         var result = await new GetAstronautDutiesByNameHandler(context).Handle(new GetAstronautDutiesByName { Name = "Jane Roe" }, CancellationToken.None);
 
-        Assert.Equal("Jane Roe", result.Person.Name);
+        Assert.Equal("Jane Roe", result.Person?.Name);
         Assert.Equal(new[] { "Commander", "Pilot" }, result.AstronautDuties.Select(d => d.DutyTitle));
     }
 

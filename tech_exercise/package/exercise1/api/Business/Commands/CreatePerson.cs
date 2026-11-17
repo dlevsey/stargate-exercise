@@ -18,15 +18,13 @@ namespace StargateAPI.Business.Commands
         {
             _context = context;
         }
-        public Task Process(CreatePerson request, CancellationToken cancellationToken)
+        public async Task Process(CreatePerson request, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(request.Name)) throw new BadHttpRequestException("Name is required.");
 
-            var person = _context.People.AsNoTracking().FirstOrDefault(z => z.Name == request.Name);
+            var person = await _context.People.AsNoTracking().FirstOrDefaultAsync(z => z.Name == request.Name, cancellationToken);
 
             if (person is not null) throw new BadHttpRequestException("A person with this name already exists.", StatusCodes.Status409Conflict);
-
-            return Task.CompletedTask;
         }
     }
 
@@ -46,9 +44,9 @@ namespace StargateAPI.Business.Commands
                    Name = request.Name
                 };
 
-                await _context.People.AddAsync(newPerson);
+                await _context.People.AddAsync(newPerson, cancellationToken);
 
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
 
                 return new CreatePersonResult()
                 {
