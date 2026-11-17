@@ -38,4 +38,17 @@ public class ApiTests : IDisposable
         var body = await response.Content.ReadFromJsonAsync<GetPersonByNameResult>();
         Assert.Equal("Jane Roe", body!.Person!.Name);
     }
+
+    // Rule 1, through the real application: this is the test that fails when the pre-processor is not registered.
+    [Fact]
+    public async Task Adding_the_same_name_twice_is_refused()
+    {
+        await _client.PostAsJsonAsync("/Person", "Jane Roe");
+
+        var second = await _client.PostAsJsonAsync("/Person", "Jane Roe");
+
+        Assert.False(second.IsSuccessStatusCode);
+        var people = await _client.GetFromJsonAsync<GetPeopleResult>("/Person");
+        Assert.Single(people!.People);
+    }
 }

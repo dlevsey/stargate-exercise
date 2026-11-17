@@ -27,6 +27,17 @@ public class QueryTests : IDisposable
     }
 
     [Fact]
+    public async Task GetPersonByName_ignores_upper_and_lower_case()
+    {
+        await _db.AddPerson("Jane Roe");
+
+        using var context = _db.NewContext();
+        var result = await new GetPersonByNameHandler(context).Handle(new GetPersonByName { Name = "JANE ROE" }, CancellationToken.None);
+
+        Assert.Equal("Jane Roe", result.Person?.Name);
+    }
+
+    [Fact]
     public async Task GetAstronautDutiesByName_returns_the_duties_newest_first()
     {
         await _db.AddPerson("Jane Roe");
