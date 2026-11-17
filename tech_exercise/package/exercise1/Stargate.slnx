@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/api/">
+    <Project Path="api/StargateAPI.csproj" />
+  </Folder>
+  <Project Path="StargateAPI.Tests/StargateAPI.Tests.csproj" />
+</Solution>
