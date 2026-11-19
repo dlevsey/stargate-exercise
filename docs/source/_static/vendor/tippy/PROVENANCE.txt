@@ -1,0 +1,15 @@
+The hover popups use two small JavaScript libraries. Both are kept in this folder
+so the site works with no internet connection and never changes by itself.
+
+  popper.min.js   @popperjs/core 2.11.8, MIT licence (POPPER-LICENSE.txt)
+                  SHA-256 c212f4b505a86352aed62b24a8f16f999f821ecbe6456c7f3c8a04bc87968782
+  tippy.min.js    tippy.js 6 (UMD build), MIT licence (TIPPY-LICENSE.txt)
+                  SHA-256 3f0fe70eb26ccf28f6887a192e29d38dd7ef7c2f079a73304ad42ddc7bed37de
+
+REFERENCE-THEME-LICENSE.txt is a BSD 3-Clause licence (Copyright 2020, Chris
+Holdgraf) that was kept next to these two files where they were copied from.
+It is kept here for the same reason: licences travel with the files.
+
+To check that a file is unchanged:   sha256sum popper.min.js tippy.min.js
+To update: download the same file names from a release of each project, replace
+them here, update the two hashes above, and run ./build.sh.

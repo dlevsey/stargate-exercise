@@ -1,0 +1,14 @@
+# What a build produces.
+_build/
+
+# Pages that tools/prebuild.py writes at every build. Their source is the code and the
+# repository's own documents, so committing them would only create two versions of the truth.
+source/api/
+source/diagrams/
+source/http/
+source/project/
+
+# Your own settings for this machine (see local.env.example).
+local.env
+
+__pycache__/

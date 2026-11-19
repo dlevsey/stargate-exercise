@@ -1,0 +1,6 @@
+# These files run inside WSL, where a Windows line ending (CRLF) makes a script fail with
+# errors such as "$'\r': command not found". Keep Unix line endings whatever Git is set to.
+*.sh  text eol=lf
+*.py  text eol=lf
+*.env text eol=lf
+*.example text eol=lf
