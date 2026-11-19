@@ -1,0 +1,152 @@
+/* Reference previews: the scrollable hover popups that js/tippy-preview.js builds. */
+.tippy-box[data-theme~="reference-preview"] {
+    background: var(--pst-color-background, #fff);
+    color: var(--pst-color-text-base, #222);
+    border: 1px solid var(--pst-color-border, #bbb);
+    border-radius: 0.5rem;
+    box-shadow: 0 0.5rem 2rem rgb(0 0 0 / 24%);
+    max-width: calc(100vw - 2rem);   /* the upper limit in pixels comes from conf.py */
+    font-family: var(--pst-font-family-base, sans-serif);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.tippy-box[data-theme~="reference-preview"] > .tippy-content {
+    padding: 0;
+}
+
+.tippy-box[data-theme~="reference-preview"] > .tippy-arrow {
+    color: var(--pst-color-background, #fff);
+}
+
+.reference-preview {
+    display: flex;
+    flex-direction: column;
+    max-height: min(var(--reference-preview-height, 450px), calc(100dvh - 4rem));
+    max-width: calc(100vw - 2rem);
+    overflow: hidden;
+}
+
+.reference-preview-header,
+.reference-preview-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 0.9rem;
+    flex-shrink: 0;
+}
+
+.reference-preview-header {
+    border-bottom: 1px solid var(--pst-color-border, #bbb);
+}
+
+.reference-preview-title {
+    flex: 1;
+    overflow-wrap: anywhere;
+}
+
+.reference-preview-close {
+    border: 0;
+    border-radius: 0.25rem;
+    background: transparent;
+    color: inherit;
+    font-size: 1.5rem;
+    line-height: 1;
+    padding: 0.25rem 0.4rem;
+    cursor: pointer;
+}
+
+.reference-preview-footer {
+    border-top: 1px solid var(--pst-color-border, #bbb);
+    flex-wrap: wrap;
+}
+
+.reference-preview-source {
+    margin-inline-start: auto;
+    color: var(--pst-color-text-muted);
+    font-size: 0.75rem;
+}
+
+.reference-preview-scroll {
+    min-height: 0;
+    padding: 0.9rem;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    overflow-wrap: anywhere;
+}
+
+.reference-preview a {
+    color: var(--pst-color-link, #0069a8);
+    text-decoration: underline;
+}
+
+.reference-preview :focus-visible {
+    outline: 2px solid var(--pst-color-primary, #0069a8);
+    outline-offset: -2px;
+}
+
+.reference-preview-scroll img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Page grids use viewport breakpoints; the much narrower portal needs one column. */
+.reference-preview-scroll .sd-row > .sd-col {
+    flex: 0 0 100%;
+    width: 100%;
+}
+
+.reference-preview-scroll :is(h1, h2, h3, h4, h5, h6) {
+    font-size: 1.05rem;
+    margin: 0.8rem 0 0.5rem;
+}
+
+.reference-preview-scroll pre {
+    padding: 0.65rem;
+    max-height: none;
+    overflow: auto;
+    font-size: 0.8rem;
+    white-space: pre;
+    overflow-wrap: normal;
+}
+
+/* Sphinx otherwise keeps long inline source paths on one unbroken line. */
+.reference-preview-scroll code.literal .pre {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.reference-preview-scroll table {
+    font-size: 0.85rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .reference-preview-portal,
+    .reference-preview-portal * {
+        transition-duration: 0s !important;
+        animation: none !important;
+    }
+}
+
+@media print {
+    .reference-preview-portal {
+        display: none !important;
+    }
+}
+
+/* The pin ring. It fills over --pin-ms while the popup is open; a full ring means pinned. */
+@property --pin-fill { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.reference-preview-pin {
+    width: 1.25rem; height: 1.25rem; flex-shrink: 0; padding: 0; border: 0; border-radius: 50%; cursor: pointer;
+    background: conic-gradient(var(--pst-color-primary, #0069a8) var(--pin-fill), var(--pst-color-border, #bbb) 0);
+    -webkit-mask: radial-gradient(circle, transparent 42%, #000 46%); mask: radial-gradient(circle, transparent 42%, #000 46%);
+    animation: reference-preview-pin-fill var(--pin-ms, 1000ms) linear forwards;
+}
+@keyframes reference-preview-pin-fill { to { --pin-fill: 360deg; } }
+.reference-preview-portal.is-pinned .reference-preview-pin {
+    animation: none; background: var(--pst-color-primary, #0069a8); -webkit-mask: none; mask: none;
+}
+.reference-preview-portal.is-pinned > .tippy-box { border-color: var(--pst-color-primary, #0069a8); }
+/* Unpinned by a click on the ring: an empty ring that does not fill again. */
+.reference-preview-portal.pin-off .reference-preview-pin { animation: none; }

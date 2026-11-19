@@ -1,0 +1,13 @@
+{#- The switch between the two sites, at the top of the left column of every page.
+    Both sites use this file. conf.py names the sites in html_context["stargate_sites"]
+    (tools/common.py, sites()). An address there is written from the start page of the site
+    that shows the switch; pathto(..., 1) turns it into one that is right on the current page.
+    Without a study document there is one site only, and nothing is shown. -#}
+{%- if stargate_sites %}
+<nav class="site-switch" aria-label="The two sites">
+  {%- for site in stargate_sites %}
+  <a href="{{ pathto(site.href, 1) or '#' }}" title="{{ site.about }}"
+     {%- if site.current %} class="current" aria-current="true"{% endif %}>{{ site.title }}</a>
+  {%- endfor %}
+</nav>
+{%- endif %}

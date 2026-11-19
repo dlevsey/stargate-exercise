@@ -1,0 +1,218 @@
+{
+  "info": {
+    "_postman_id": "3b8f2a64-7c1d-4e59-a2f0-5d9c1e7b4a31",
+    "name": "Stargate API",
+    "description": "Requests for the five routes of the Stargate API (ACTS, the Astronaut Career Tracking System), ready to send to the API on your own machine.\n\nThe five requests carry the names the README of the exercise gives them under \"The REST API is expected to do the following\". Each description says which route it is, which controller action answers it and what is sent. What comes back is for you to judge against the README.\n\n**Before you send**\n\n1. Start the API: Visual Studio, or `dotnet run` in `api`. The launch profiles `http` and `https` listen on `http://localhost:5204`; `https` also listens on `https://localhost:7204`.\n2. The database must exist. That is task 1 of the exercise (\"Generate the database\"). Without its tables the API answers HTTP 500 with `no such table: Person`.\n\n**Variables** (tab *Variables* of this collection)\n\n- `host`: where the API listens. Change it when you use another profile or port.\n- `name`: the person all requests are about. A name with a space works: Postman writes it as `%20` in an address.\n\n**A useful order:** add the person, add a duty for that person, then read both back.\n\n**If Postman reports an SSL error:** started with the `https` profile, the API sends a request for `http://localhost:5204` on to `https://localhost:7204` (`app.UseHttpsRedirection()` in `Program.cs`), and that address uses the development certificate of .NET. Start the API with the `http` profile, or turn off *SSL certificate verification* in Postman's settings.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Person",
+      "description": "The routes of `PersonController` (`api/Controllers/PersonController.cs`).",
+      "item": [
+        {
+          "name": "Retrieve all people",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/Person",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "Person"
+              ]
+            },
+            "description": "`GET /Person`, answered by `PersonController.GetPeople`. Nothing is sent."
+          },
+          "response": []
+        },
+        {
+          "name": "Retrieve a person by name",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/Person/{{name}}",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "Person",
+                "{{name}}"
+              ]
+            },
+            "description": "`GET /Person/{name}`, answered by `PersonController.GetPersonByName`. The name comes from the variable `name`."
+          },
+          "response": []
+        },
+        {
+          "name": "Add/update a person by name",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "\"{{name}}\"",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/Person",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "Person"
+              ]
+            },
+            "description": "`POST /Person`, answered by `PersonController.CreatePerson`.\n\nThe body is one JSON string: the name in double quotes, nothing around it. The action takes it as `[FromBody] string name`."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Astronaut duty",
+      "description": "The routes of `AstronautDutyController` (`api/Controllers/AstronautDutyController.cs`). The last two requests are further examples for `POST /AstronautDuty`, made from the rules in the README.",
+      "item": [
+        {
+          "name": "Retrieve Astronaut Duty by name",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/AstronautDuty/{{name}}",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "AstronautDuty",
+                "{{name}}"
+              ]
+            },
+            "description": "`GET /AstronautDuty/{name}`, answered by `AstronautDutyController.GetAstronautDutiesByName`. The name comes from the variable `name`."
+          },
+          "response": []
+        },
+        {
+          "name": "Add an Astronaut Duty",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{name}}\",\n  \"rank\": \"2LT\",\n  \"dutyTitle\": \"Mission Specialist\",\n  \"dutyStartDate\": \"2024-01-15T00:00:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/AstronautDuty",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "AstronautDuty"
+              ]
+            },
+            "description": "`POST /AstronautDuty`, answered by `AstronautDutyController.CreateAstronautDuty`.\n\nThe body has the four properties of the class `CreateAstronautDuty`: `name`, `rank`, `dutyTitle` and `dutyStartDate`. The person named must exist already."
+          },
+          "response": []
+        },
+        {
+          "name": "Add a later Astronaut Duty (rules 3 to 5)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{name}}\",\n  \"rank\": \"1LT\",\n  \"dutyTitle\": \"Commander\",\n  \"dutyStartDate\": \"2025-03-01T00:00:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/AstronautDuty",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "AstronautDuty"
+              ]
+            },
+            "description": "The same route with a later start date, for the same person. Send it after \"Add an Astronaut Duty\".\n\nThe README's rules 3 to 5 say what should then be true: one current duty at a time, no end date on the current duty, and the previous duty ends the day before this one starts (here 2025-02-28)."
+          },
+          "response": []
+        },
+        {
+          "name": "Add a RETIRED duty (rules 6 and 7)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{name}}\",\n  \"rank\": \"1LT\",\n  \"dutyTitle\": \"RETIRED\",\n  \"dutyStartDate\": \"2026-06-01T00:00:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/AstronautDuty",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "AstronautDuty"
+              ]
+            },
+            "description": "The same route with the duty title `RETIRED`.\n\nThe README's rules 6 and 7 say what should then be true: the person counts as retired, and the career end date is one day before this start date (here 2026-05-31)."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "host",
+      "value": "http://localhost:5204",
+      "type": "string"
+    },
+    {
+      "key": "name",
+      "value": "Jane Doe",
+      "type": "string"
+    }
+  ]
+}

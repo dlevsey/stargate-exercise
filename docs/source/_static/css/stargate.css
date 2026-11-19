@@ -1,0 +1,133 @@
+/* ---------------------------------------------------------------------------------------
+   Code reference. The HTML is nested lists (dl > dt + dd) made by Sphinx:
+     namespace  >  type (class, record, ...)  >  section ("Properties")  >  member
+   Layout: the namespace is a quiet label, every type is one card with its declaration as
+   the card's head, and the members are plain rows inside it, divided by thin lines.
+   "[class]" in every selector adds nothing to what is matched. It makes these rules as strong
+   as the theme's own rules for such lists, which would otherwise win and put back their
+   indents and the gap under every entry.
+   --------------------------------------------------------------------------------------- */
+dl.cs[class] { margin: 0; }
+dl.cs[class] > dt.sig {
+    font-family: ui-monospace, "Cascadia Code", "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.84rem; font-weight: 400; line-height: 1.6; overflow-wrap: anywhere;
+    color: var(--pst-color-text-base, #24292f); background: none;
+}
+dl.cs[class] > dd { margin: 0; padding: 0; }
+dl.cs[class] > dd:empty { display: none; }
+
+/* Inside a declaration: the name is what the eye should find, the rest steps back. */
+dl.cs[class] > dt.sig .sig-name, dl.cs[class] > dt.sig .descname { color: var(--pst-color-text-base, #24292f); font-weight: 650; }
+dl.cs[class] > dt.sig .property, dl.cs[class] > dt.sig .k { color: var(--pst-color-text-muted, #57606a); }
+dl.cs[class] > dt.sig .sig-param, dl.cs[class] > dt.sig em { font-style: normal; }
+dl.cs[class] > dt.sig .sig-paren { font-size: inherit; color: var(--pst-color-text-muted, #57606a); }
+dl.cs[class].function > dt.sig .sig-name + .w { display: none; }       /* "Handle(" and not "Handle (" */
+dl.cs[class] > dt.sig a.reference { text-decoration: none; }
+dl.cs[class] > dt.sig a.reference:hover { text-decoration: underline; text-underline-offset: 3px; }
+/* The "#" that gives an entry's own address shows up only while the pointer is on the entry. */
+.bd-main .bd-content dl.cs[class] > dt.sig > a.headerlink {
+    display: inline; opacity: 0; color: var(--pst-color-text-muted, #57606a); transition: opacity 0.12s;
+}
+.bd-main .bd-content dl.cs[class] > dt.sig:hover > a.headerlink, .bd-main .bd-content dl.cs[class] > dt.sig > a.headerlink:focus { opacity: 1; }
+dl.cs[class] > dt.sig:target { background: var(--pst-color-target, #fff8c5); }
+
+/* Namespace: a small label above its types. */
+dl.cs[class].namespace > dt.sig { font-size: 0.8rem; color: var(--pst-color-text-muted, #57606a); margin: 0 0 0.25rem; }
+dl.cs[class].namespace > dt.sig .sig-name { font-weight: 500; color: var(--pst-color-text-muted, #57606a); }
+
+/* A type: one card. */
+dl.cs[class].namespace > dd > dl.cs[class] {
+    margin: 1rem 0 1.75rem; border: 1px solid var(--pst-color-border, #d0d7de); border-radius: 0.75rem;
+    overflow: hidden; background: var(--pst-color-background, #fff);
+}
+dl.cs[class].namespace > dd > dl.cs[class] > dt.sig {
+    font-size: 0.92rem; padding: 0.8rem 1.15rem;
+    background: var(--pst-color-surface, #f6f8fa); border-bottom: 1px solid var(--pst-color-border, #d0d7de);
+}
+dl.cs[class].namespace > dd > dl.cs[class] > dt.sig .sig-name { font-size: 1.02rem; }
+dl.cs[class].namespace > dd > dl.cs[class] > dd { padding: 0.35rem 1.15rem 0.9rem; }
+dl.cs[class].namespace > dd > dl.cs[class] > dd > p:first-child { margin-top: 0.6rem; }
+
+/* A member: a row. A thin line divides it from the row above. */
+.breathe-sectiondef dl.cs[class] > dt.sig { padding: 0.5rem 0; }
+.breathe-sectiondef dl.cs[class] + dl.cs[class] { border-top: 1px solid var(--pst-color-border-muted, var(--pst-color-border, #e3e6ea)); }
+.breathe-sectiondef dl.cs[class] > dd { padding: 0 0 0.6rem; font-size: 0.92rem; }
+.breathe-sectiondef dl.cs[class] > dd > :last-child { margin-bottom: 0; }
+
+/* Section titles inside a type ("Properties", "Private fields"). */
+p.rubric.breathe-sectiondef-title {
+    border: 0; margin: 1.1rem 0 0.15rem; line-height: 1.4;
+    font-size: 0.7rem; font-weight: 650; letter-spacing: 0.07em; text-transform: uppercase;
+    color: var(--pst-color-text-muted, #57606a);
+}
+
+/* In a hover popup an entry stands alone: no card around it. */
+.reference-preview-scroll dl.cs[class].namespace > dd > dl.cs[class], .reference-preview-scroll dl.cs[class] { border: 0; margin: 0; background: none; }
+.reference-preview-scroll dl.cs[class] > dt.sig { background: none; border: 0; padding: 0 0 0.4rem; }
+.reference-preview-scroll dl.cs[class] > dd { padding: 0; }
+/* Text inside a card: one size, a little smaller than the running text of a guide page. */
+dl.cs[class].namespace > dd > dl.cs[class] > dd > p { font-size: 0.9rem; margin: 0.6rem 0; }
+dl.cs[class].namespace > dd > dl.cs[class] > dd > p code { font-size: 0.85em; }
+/* Names of types and members in the "Contents" list on the right. Without the box that code
+   has in a sentence, more of a name fits on a line. The name takes the colour and the weight
+   of its entry (Sphinx makes every name inside a link bold), so the entry being read stands
+   out the same way on every page. A name that is still too long goes on to a second line (the
+   theme would keep it on one line, with its end out of sight). _static/js/contents-list.js
+   says where such a name may be divided. */
+nav.page-toc code { background: none; border: 0; padding: 0; color: inherit; font-weight: inherit; }
+nav.page-toc span.pre { white-space: normal; overflow-wrap: anywhere; }
+/* Code samples */
+div.highlight pre { border-radius: 0.5rem; font-size: 0.85rem; line-height: 1.6; padding: 0.9rem 1rem; }
+/* Diagrams are drawn on white so they stay readable in dark mode. */
+div.graphviz { background: #fff; border: 1px solid var(--pst-color-border, #d0d7de); border-radius: 0.5rem; padding: 1rem; overflow: auto; text-align: center; }
+div.graphviz object, div.graphviz img { max-width: 100%; height: auto; }
+/* Dev docs: a page that shows a repository file. The lines that the address names
+   (Program.cs.html#L6-L21) are marked by _static/js/source-lines.js with the theme's own
+   colour for marked lines; this makes the mark as wide as the box. */
+.source-listing .source-line-marked { display: block; }
+.source-listing pre { max-height: none; }
+/* The switch between the two sites, at the top of the left column (_templates/site-switch.html).
+   A label is never broken in two. Where the column is too narrow for both labels side by side,
+   the second one goes below the first (flex-wrap), and each is as wide as the column. */
+.site-switch {
+    display: flex; flex-wrap: wrap; gap: 0.2rem; padding: 0.2rem; margin: 0 0 0.5rem;
+    background: var(--pst-color-surface, #f6f8fa); border: 1px solid var(--pst-color-border, #d0d7de); border-radius: 0.6rem;
+}
+.site-switch a {
+    flex: 1 1 0; padding: 0.35rem 0.4rem; border-radius: 0.45rem; text-align: center; text-decoration: none;
+    white-space: nowrap;
+    font-size: 0.82rem; line-height: 1.25; color: var(--pst-color-text-muted, #57606a);
+}
+.site-switch a:hover { color: var(--pst-color-text-base, #24292f); text-decoration: none; }
+.site-switch a.current {
+    background: var(--pst-color-background, #fff); color: var(--pst-color-text-base, #24292f); font-weight: 650;
+    box-shadow: 0 0 0 1px var(--pst-color-border, #d0d7de);
+}
+/* Code reference: the line under a type that names the parts of the dev docs which mention it. */
+p.companion-mentions { font-size: 0.875rem; color: var(--pst-color-text-muted, #57606a); margin: 0.5rem 0; }
+.companion-mentions-label { font-weight: 600; }
+/* Dev docs: the note above a code excerpt that no longer matches its file. */
+.admonition.stale-excerpt { font-size: 0.9rem; }
+/* Line numbers beside code: quiet, never selected with the code, divided from it by a thin line. */
+.highlight span.linenos {
+    user-select: none; -webkit-user-select: none; opacity: 0.55 !important;
+    padding: 0 0.8em 0 0 !important; margin-right: 0.9em; border-right: 1px solid var(--pst-color-border, #d0d7de);
+}
+/* Dev docs: the line between two pieces of one excerpt ("... lines 49–72 omitted ..."). */
+p.excerpt-gap { font-size: 0.8rem; color: var(--pst-color-text-muted, #57606a); margin: -0.4rem 0 0.6rem 1rem; }
+/* Screens of the frontend mockup: a thin frame, never wider than the text. */
+img.mockup { display: block; max-width: 100%; height: auto; margin: 0.8rem 0 1.6rem; border: 1px solid var(--pst-color-border, #d0d7de); border-radius: 0.6rem; }
+/* Popups: one sideways scroll bar at the bottom edge of the popup, always in reach, instead of one
+   under each code block or table (which could be far below what is shown). Wide code and tables
+   keep their full width and the popup body scrolls for them. */
+.reference-preview-scroll { overflow-x: auto; scrollbar-width: auto; scrollbar-color: var(--pst-color-text-muted, #8b949e) transparent; }
+.reference-preview-scroll pre { overflow: visible; width: max-content; min-width: 100%; }
+.reference-preview-scroll div.highlight, .reference-preview-scroll div[class*="highlight-"] { width: max-content; min-width: 100%; overflow: visible; }
+.reference-preview-scroll .pst-scrollable-table-container { overflow: visible; }
+.reference-preview-scroll::-webkit-scrollbar { height: 12px; width: 12px; }
+.reference-preview-scroll::-webkit-scrollbar-thumb { background: var(--pst-color-text-muted, #8b949e); border-radius: 6px; border: 3px solid transparent; background-clip: content-box; }
+/* Popups can be moved by their title bar. A moved popup no longer points at its link, so it has no arrow. */
+.reference-preview-header { cursor: grab; user-select: none; -webkit-user-select: none; touch-action: none; }
+.is-dragging .reference-preview-header { cursor: grabbing; }
+.reference-preview-header button { cursor: pointer; }
+.reference-preview-portal.is-moved .tippy-arrow { display: none; }

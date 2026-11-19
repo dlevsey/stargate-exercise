@@ -64,7 +64,7 @@ Examine the code, find and resolve any flaws, if any exist. Identify design patt
 
 ## Running this solution
 
-Run every command from the `exercise1` folder. You need the .NET SDK 8 or newer, and the EF Core command-line tool in version 8 (`dotnet tool install --global dotnet-ef --version 8.*`).
+Run every command from the top folder of the repository (the one with `Stargate.slnx`). You need the .NET SDK 8 or newer, and the EF Core command-line tool in version 8 (`dotnet tool install --global dotnet-ef --version 8.*`).
 
 1. Create the database. This makes the SQLite file `api\starbase.db` with all tables:
 
@@ -79,7 +79,7 @@ Run every command from the `exercise1` folder. You need the .NET SDK 8 or newer,
    dotnet run --launch-profile http
    ```
 
-3. Run the tests (from `exercise1`):
+3. Run the tests (from the top folder of the repository):
 
    ```
    dotnet test

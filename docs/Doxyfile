@@ -1,0 +1,28 @@
+# Doxygen settings for the Stargate code reference.
+#
+# Doxygen's only job here is to read the C# files and write XML that describes
+# every type and member. Sphinx turns that XML into pages.
+#
+# tools/prebuild.py adds the settings that depend on where the folders are:
+# INPUT, OUTPUT_DIRECTORY and STRIP_FROM_PATH.
+
+PROJECT_NAME           = "Stargate"
+FILE_PATTERNS          = *.cs
+RECURSIVE              = YES
+
+# Describe everything, including private members and code that has no /// comment yet.
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+WARN_IF_UNDOCUMENTED   = NO
+QUIET                  = YES
+
+# XML only.
+GENERATE_XML           = YES
+XML_PROGRAMLISTING     = NO
+GENERATE_HTML          = NO
+GENERATE_LATEX         = NO
+HAVE_DOT               = NO
+
+# File names that still work on a drive that ignores upper and lower case (a Windows drive seen from WSL).
+CASE_SENSE_NAMES       = NO

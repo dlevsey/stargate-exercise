@@ -1,0 +1,48 @@
+/* Your own highlights and notes (js/notes.js). */
+mark.user-note {
+    background: rgb(255 214 10 / 38%); color: inherit; padding: 0; border-radius: 2px; cursor: pointer;
+    box-decoration-break: clone; -webkit-box-decoration-break: clone;
+}
+mark.user-note.has-note { background: rgb(255 159 10 / 40%); border-bottom: 2px solid rgb(255 159 10); }
+mark.user-note.flash { outline: 2px solid var(--pst-color-primary, #0969da); outline-offset: 1px; }
+.user-note-ui { font-family: var(--pst-font-family-base, system-ui, sans-serif); font-size: 0.85rem; }
+.user-note-ui button {
+    font: inherit; padding: 0.3rem 0.65rem; border-radius: 0.4rem; cursor: pointer;
+    border: 1px solid var(--pst-color-border, #d0d7de); background: var(--pst-color-background, #fff);
+    color: var(--pst-color-text-base, #24292f);
+}
+.user-note-ui button:hover { border-color: var(--pst-color-primary, #0969da); }
+.user-note-bar, .user-note-card {
+    position: absolute; z-index: 2147483000; display: flex; gap: 0.35rem; padding: 0.35rem;
+    background: var(--pst-color-surface, #f6f8fa); border: 1px solid var(--pst-color-border, #d0d7de);
+    border-radius: 0.6rem; box-shadow: 0 0.4rem 1.4rem rgb(0 0 0 / 28%);
+}
+.user-note-bar[hidden], .user-note-card[hidden] { display: none; }
+.user-note-card { flex-direction: column; width: min(22rem, calc(100vw - 1rem)); padding: 0.6rem; }
+.user-note-card textarea {
+    width: 100%; font: inherit; padding: 0.45rem; border-radius: 0.4rem; resize: vertical;
+    border: 1px solid var(--pst-color-border, #d0d7de); background: var(--pst-color-background, #fff);
+    color: var(--pst-color-text-base, #24292f);
+}
+.user-note-row { display: flex; gap: 0.35rem; align-items: center; flex-wrap: wrap; }
+.user-note-open { position: fixed; right: 1rem; bottom: 1rem; z-index: 10040; box-shadow: 0 0.2rem 0.8rem rgb(0 0 0 / 22%); }
+.user-note-panel {
+    position: fixed; right: 1rem; bottom: 3.6rem; z-index: 10045; display: none; flex-direction: column;
+    width: min(26rem, calc(100vw - 2rem)); max-height: min(70vh, 40rem);
+    background: var(--pst-color-background, #fff); color: var(--pst-color-text-base, #24292f);
+    border: 1px solid var(--pst-color-border, #d0d7de); border-radius: 0.75rem; box-shadow: 0 0.5rem 2rem rgb(0 0 0 / 30%);
+}
+.user-note-panel.open { display: flex; }
+.user-note-head { padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--pst-color-border, #d0d7de); }
+.user-note-head strong { margin-right: auto; }
+.user-note-list { overflow: auto; padding: 0.5rem 0.75rem 0.75rem; }
+.user-note-page { display: block; margin: 0.7rem 0 0.3rem; font-weight: 650; text-decoration: none; }
+.user-note-item { padding: 0.45rem 0; border-top: 1px solid var(--pst-color-border, #d0d7de); }
+.user-note-quote {
+    display: block; text-decoration: none; color: inherit; padding-left: 0.5rem; border-left: 3px solid rgb(255 214 10);
+    white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.8rem;
+}
+.user-note-words { margin: 0.3rem 0; white-space: pre-wrap; }
+.user-note-lost { color: var(--pst-color-danger, #cf222e); font-size: 0.78rem; }
+.user-note-item button { margin-top: 0.3rem; padding: 0.1rem 0.45rem; font-size: 0.75rem; }
+@media print { .user-note-ui { display: none; } }
